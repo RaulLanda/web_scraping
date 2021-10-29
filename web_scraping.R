@@ -18,3 +18,6 @@ new <- df1[,c("ups", "title", "subreddit", "url")]
 
 #Order by upvote
 alldatasorted <- new[order(-new$up),]
+
+
+#More things my be addded
