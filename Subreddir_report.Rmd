@@ -1,0 +1,74 @@
+---
+title: "Most upvoted political threads in reddit"
+author: "Cesar Raul Landa Aponte"
+date: "10/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Reddit    
+```{r image, echo=FALSE, out.width="10%", out.height="10%"}
+knitr::include_graphics("reddit-logo-app.jpg")
+```
+
+Reddit <https://www.reddit.com/> is a forum containing a large amount of topics, called subreddits. In this report we're getting some insight of two particular subreddits, r/politics and r/PoliticalDiscussion. Lets see which are the most upvoted threads in this two subreddits.
+
+#### For this analysis we're gonna use some libraries:
+
+* library(jsonlite)
+* library(tidyverse)
+* library(dplyr)
+* library(httr)
+* library(ggplot2)
+* library(clusterSim)
+```{r libraries, message=FALSE}
+library(jsonlite)
+library(tidyverse)
+library(dplyr)
+library(httr)
+library(ggplot2)
+library(clusterSim)
+```
+1   Import the address to rstudio and prepare the data into data frames
+```{r fromJSON, echo=FALSE}
+politics <- jsonlite::fromJSON("https://www.reddit.com/r/politics/.json")
+pol_disc <- jsonlite::fromJSON("https://www.reddit.com/r/PoliticalDiscussion/.json")
+
+df_politics <- politics$data$children$data
+df_pol_disc <- pol_disc$data$children$data
+
+```
+
+2   Select desired columns and merge the two data frames into one, after that, we sorted it in any way we like
+```{r Prune_merge, echo=FALSE}
+prune_df_politics <- df_politics[,c("ups", "title", "subreddit", "url", "author_fullname")]
+prune_df_pol_disc <- df_pol_disc[,c("ups", "title", "subreddit", "url", "author_fullname")]
+
+alldata <- rbind(prune_df_pol_disc, prune_df_politics)
+
+alldatasorted <- alldata[order(-alldata$up),]
+```
+
+3   We're gonna do a normalization for the data ww have, and then we're gonna filter all the upvotes less than 0. In that way we get rid of the less upvoted threads
+```{r norm_filter, echo=FALSE}
+
+scaled.dat <- clusterSim::data.Normalization(alldatasorted[,1], type = "n5", normalization = "column")
+alldatasorted[,1] <- scaled.dat
+alldatasorted <- filter(alldatasorted, ups >= 0)
+alldatasorted <- dplyr::as_tibble(alldatasorted)
+```
+
+```{r norm, echo=TRUE}
+head(alldatasorted)
+```
+
+4 Lets see the plots
+
+```{r pressure, echo=FALSE, fig.width= 10}
+alldatasorted |> ggplot2::ggplot(ggplot2::aes(ups, title)) + ggplot2::geom_bar(stat = "identity") + ggplot2::labs(title = "Most upvoted threads in r/politics and r/PoliticalDiscusion subreddits. Oct/29/2021") + ggplot2::aes(stringr::str_wrap(title,10), ups) + ggplot2::ylab(NULL)
+```
+
+

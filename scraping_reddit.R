@@ -7,6 +7,7 @@ library(tidyverse)
 library(dplyr)
 library(httr)
 library(ggplot2)
+library(clusterSim)
 
 #import the address to R
 #btc <- jsonlite::fromJSON("https://www.reddit.com/r/pedalboards/.json")
@@ -22,7 +23,7 @@ pol_disc <- jsonlite::fromJSON("https://www.reddit.com/r/PoliticalDiscussion/.js
 df_politics <- politics$data$children$data
 df_pol_disc <- pol_disc$data$children$data
 
-# Selecto desired columns
+# Select desired columns
 #new <- df1[,c("ups", "title", "subreddit", "url")]
 prune_df_politics <- df_politics[,c("ups", "title", "subreddit", "url", "author_fullname")]
 prune_df_pol_disc <- df_pol_disc[,c("ups", "title", "subreddit", "url", "author_fullname")]
@@ -41,7 +42,7 @@ alldatasorted[,1] <- scaled.dat
 #filter all the ups less than 0
 
 alldatasorted <- filter(alldatasorted, ups >= 0)
-
+alldatasorted <- as_tibble(alldatasorted)
 #Filtering all ups less than 0 we get the most upvoted topics 
 jpeg(filename = "Most_upvoted_threads.jpg", width = 900, height = 600)
 g <- ggplot(data = alldatasorted, aes(x = ups, y = title))
